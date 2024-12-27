@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f4f4f9;
+            color: #333333;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: #1d4f69;
+            color: #ffffff;
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .content-section {
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-section h3 {
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .property-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .text-primary {
+            color: #0056b3 !important;
+        }
+
+        .text-warning {
+            color: #ffcc00 !important;
+        }
+
+        .card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-footer {
+            background-color: #f8f9fa;
+        }
+
+        .table th, .table td {
+            text-align: center;
+        }
+
+        .status-paid {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Стили модального окна в стиле админской страницы */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin-top: 10px;
+            padding: 20px;
+            border-radius: 5px;
+            height: auto;
+            width: 50%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+        }
+
+        .times {
+            padding-bottom: 10px;
+            font-size: 30px;
+        }
+
+        .custom-flex {
+            display: flex;
+            align-items: center;
+        }
+
+        .close-button, .save-button {
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .close-button {
+            background-color: dimgray;
+            color: #ffffff;
+            margin-right: 10px;
+        }
+
+        .save-button {
+            background-color: #339bb1;
+            color: #ffffff;
+        }
+
+        .modal-header, .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h4 {
+            margin: 0;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 30px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            margin-top: 5px;
+        }
+
+        hr {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .modal-footer {
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <div class="row w-100">
+            <div class="col-md-10" style="padding-top: 7px;">
+                <h1 th:text="${user.firstName} + ' ' + ${user.lastName} + ' (' + ${user.email} + ')'"></h1>
+            </div>
+            <div class="col-md-2 text-end" style="padding-top: 7px">
+                <a th:href="@{/logout}" class="btn btn-outline-light">Выйти</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="text-center mt-4">Личный кабинет</h1>
+
+    <!-- Информация о пользователе -->
+    <div class="content-section">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>Информация о пользователе</h3>
+            <button id="editUserBtn" class="btn btn-warning">Редактировать профиль</button>
+        </div>
+        <table class="table table-striped table-bordered">
+            <thead class="table-primary">
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Возраст</th>
+                <th>Email</th>
+                <th>Роль</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.firstName}"></td>
+                <td th:text="${user.lastName}"></td>
+                <td th:text="${user.age}"></td>
+                <td th:text="${user.email}"></td>
+                <td th:text="${user.roles.?[role.contains('ADMIN')].size() > 0 ? 'Администратор' : 'Пользователь'}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Информация о налогах -->
+    <!-- Информация о налогах -->
+    <div class="content-section">
+        <h3>Налоговые платежи</h3>
+        <div class="chart-container">
+            <canvas id="taxChart"></canvas>
+        </div>
+        <table class="table table-hover mt-3">
+            <thead class="table-secondary">
+            <tr>
+                <th>Тип налога</th>
+                <th>Сумма</th>
+                <th>Статус</th>
+                <th>Срок оплаты</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tax : ${user.taxPayments}">
+                <td th:text="${tax.taxType}"></td>
+                <td th:text="${tax.amount} + ' ₽'"></td>
+                <td th:text="${tax.status}"></td>
+                <td th:text="${tax.dueDate}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Информация о собственности -->
+    <div class="content-section">
+        <h3>Собственность</h3>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div th:each="property : ${user.properties}" class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="property-icon">
+                                <i class="bi bi-house-door text-primary" th:if="${property.type == 'Квартира'}"></i>
+                                <i class="bi bi-car-front text-warning" th:if="${property.type == 'Автомобиль'}"></i>
+                            </div>
+                            <h5 class="card-title ms-3" th:text="${property.type}"></h5>
+                        </div>
+                        <p class="card-text">
+                            <strong>Описание:</strong> <span th:text="${property.description}"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>Стоимость:</strong> <span th:text="${property.value} + ' ₽'"></span>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">ID собственности: <span th:text="${property.id}"></span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования пользователя -->
+<div class="modal" id="editUserModal">
+    <div class="modal-content">
+        <div class="modal-header custom-flex" style="justify-content: space-between">
+            <h4 id="description">Редактирование профиля</h4>
+            <span id="closeModal" class="close times">&times;</span>
+        </div>
+        <hr>
+        <form id="editUserForm" class="custom-flex" style="flex-direction: column; text-align: left;">
+            <input type="hidden" name="id" th:value="${user.id}">
+
+            <div class="form-group">
+                <label for="editFirstName">Имя</label>
+                <input type="text" class="form-control" id="editFirstName" name="firstName"
+                       th:value="${user.firstName}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editLastName">Фамилия</label>
+                <input type="text" class="form-control" id="editLastName" name="lastName"
+                       th:value="${user.lastName}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editAge">Возраст</label>
+                <input type="number" min="1" class="form-control" id="editAge" name="age" th:value="${user.age}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editEmail">Email</label>
+                <input type="email" class="form-control" id="editEmail" name="email"
+                       th:value="${user.email}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="editPassword">Пароль</label>
+                <input type="password" class="form-control" id="editPassword" name="password"
+                       placeholder="Новый пароль">
+            </div>
+
+            <hr>
+            <div class="modal-footer">
+                <button type="button" class="close-button" id="closeModalBtn">Отмена</button>
+                <button type="submit" class="save-button action-button" data-action="Edit">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Пример построения графика
+    document.addEventListener("DOMContentLoaded", function () {
+        const taxPayments = [
+            {"taxType": "Налог на имущество", "amount": 7000.32},
+            {"taxType": "Налог на доход", "amount": 3857.50}
+        ];
+
+        const labels = taxPayments.map(t => t.taxType);
+        const amounts = taxPayments.map(t => t.amount);
+
+        const ctx = document.getElementById('taxChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Tax Amount (₽)',
+                    data: amounts,
+                    backgroundColor: ['#007bff', '#28a745'],
+                    borderColor: ['#0056b3', '#1e7e34'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+
+    // Логика для модального окна и редактирования пользователя
+    const editModal = document.getElementById('editUserModal');
+    const editUserBtn = document.getElementById('editUserBtn');
+    const closeModal = document.getElementById('closeModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const editUserForm = document.getElementById('editUserForm');
+
+    editUserBtn.addEventListener('click', () => {
+        editModal.style.display = 'flex';
+    });
+
+    closeModal.addEventListener('click', () => {
+        editModal.style.display = 'none';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        editModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === editModal) {
+            editModal.style.display = 'none';
+        }
+    });
+
+    async function fetchPatchUser(userData) {
+        try {
+            return await fetch('/api/users', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(userData)
+            });
+        } catch (e) {
+            console.log('Failed to patch user: ' + e)
+        }
+    }
+
+    editUserForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(form);
+        const userData = Object.fromEntries(formData.entries());
+
+        // Если пароль пустой, удалим его из отправляемых данных
+        if (!userData.password) {
+            delete userData.password;
+        }
+
+        userData.id = parseInt(userData.id, 10);
+        userData.age = parseInt(userData.age, 10);
+
+        const response = await fetchPatchUser(userData);
+        if (response && response.ok) {
+            window.location.reload();
+        } else {
+            console.error("Error updating user");
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('td[th\\:text]').forEach(td => {
+            const statusText = td.innerText.trim();
+            if (statusText === 'PAID') {
+                td.style.color = 'green';
+                td.style.fontWeight = 'bold';
+            } else if (statusText === 'PENDING') {
+                td.style.color = 'red';
+                td.style.fontWeight = 'bold';
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  db:
+    image: mysql
+    container_name: my_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: database
+      MYSQL_USER: ramazan
+      MYSQL_PASSWORD: ramazan
+    ports:
+      - "3307:3306"
+    networks:
+      - custom_network
+#    volumes:
+#      - mysql_data:/var/lib/mysql
+#      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build:
+      context: .
+    image: spring-boot-app
+    container_name: my_app
+    restart: always
+    environment:
+      DB_URL: jdbc:mysql://db:3306/database
+      DB_USER: ramazan
+      DB_PASSWORD: ramazan
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - custom_network
+
+networks:
+  custom_network:
+    driver: bridge
+
+#volumes:
+#  mysql_data:
